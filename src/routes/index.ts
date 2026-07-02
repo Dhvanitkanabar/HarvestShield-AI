@@ -9,6 +9,7 @@ import processorRoutes from './processor.routes.js';
 import harvestRoutes from './harvest.routes.js';
 import inventoryRoutes from './inventory.routes.js';
 import movementRoutes from './movement.routes.js';
+import recommendationRoutes from './recommendation.routes.js';
 import { sendSuccess } from '../utils/apiResponse.js';
 import { HTTP_STATUS, MESSAGES } from '../constants/index.js';
 
@@ -36,5 +37,8 @@ router.use('/processors', processorRoutes);
 router.use('/harvest', harvestRoutes);
 router.use('/inventory', inventoryRoutes);
 router.use('/movement', movementRoutes);
+
+// ── Phase 4 AI Module Routes ──
+router.use('/recommendations', recommendationRoutes);
 
 export default router;

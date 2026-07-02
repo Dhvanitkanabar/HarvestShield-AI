@@ -81,6 +81,34 @@ enum MovementType {
   SPOILED
 }
 
+// Phase 4 Enums
+enum RecommendationAction {
+  SELL_NOW
+  STORE
+  MOVE_TO_COLD_STORAGE
+  TRANSFER_TO_ANOTHER_WAREHOUSE
+  SEND_TO_PROCESSOR
+  MOVE_TO_MARKET
+  PARTIAL_SELL
+  PARTIAL_STORE
+  URGENT_ACTION_REQUIRED
+  DISCARD
+}
+
+enum RiskCategory {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum PriorityLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
 // --------------------------------------------------
 // Models
 // --------------------------------------------------
@@ -287,6 +315,9 @@ model HarvestBatch {
   
   inventories           Inventory[]
   movements             Movement[]
+  recommendations       Recommendation[]
+  riskAssessments       RiskAssessment[]
+  predictionSnapshots   PredictionSnapshot[]
 
   @@map("harvest_batches")
 }
@@ -334,4 +365,77 @@ model Movement {
   harvestBatch  HarvestBatch @relation(fields: [batchId], references: [id])
 
   @@map("movements")
+}
+
+// --------------------------------------------------
+// Phase 4: AI Decision Intelligence Engine
+// --------------------------------------------------
+
+/// Stores the final recommendation generated for a batch
+model Recommendation {
+  id                String               @id @default(uuid())
+  batchId           String               @map("batch_id")
+  
+  recommendedAction RecommendationAction @map("recommended_action")
+  reason            String
+  confidenceScore   Float                @map("confidence_score")
+  priority          PriorityLevel
+  
+  expectedProfit    Float?               @map("expected_profit")
+  spoilageRiskScore Float?               @map("spoilage_risk_score")
+  
+  createdAt         DateTime             @default(now()) @map("created_at")
+
+  harvestBatch      HarvestBatch         @relation(fields: [batchId], references: [id])
+  decisionHistories DecisionHistory[]
+
+  @@map("recommendations")
+}
+
+/// Logs how the engine evaluated all possible actions
+model DecisionHistory {
+  id                String               @id @default(uuid())
+  recommendationId  String               @map("recommendation_id")
+  
+  actionEvaluated   RecommendationAction @map("action_evaluated")
+  score             Float
+  reasoning         String
+  
+  createdAt         DateTime             @default(now()) @map("created_at")
+
+  recommendation    Recommendation       @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+
+  @@map("decision_histories")
+}
+
+/// Granular risk assessment for a batch
+model RiskAssessment {
+  id              String       @id @default(uuid())
+  batchId         String       @map("batch_id")
+  
+  riskScore       Float        @map("risk_score")
+  riskCategory    RiskCategory @map("risk_category")
+  factors         Json         // Storing { "remainingShelfLife": X, "storageQuality": Y }
+  
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  harvestBatch    HarvestBatch @relation(fields: [batchId], references: [id])
+
+  @@map("risk_assessments")
+}
+
+/// ML Readiness: Data snapshot at prediction time
+model PredictionSnapshot {
+  id                      String       @id @default(uuid())
+  batchId                 String       @map("batch_id")
+  
+  shelfLifeRemaining      Float?       @map("shelf_life_remaining")
+  storageQuality          String?      @map("storage_quality")
+  environmentalConditions Json?        @map("environmental_conditions")
+  
+  createdAt               DateTime     @default(now()) @map("created_at")
+
+  harvestBatch            HarvestBatch @relation(fields: [batchId], references: [id])
+
+  @@map("prediction_snapshots")
 }

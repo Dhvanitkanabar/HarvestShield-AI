@@ -166,7 +166,46 @@ async function main() {
       storageCondition: 'Normal cold storage',
     }
   });
-  console.log(`Created inventory for batch: ${harvest.batchNumber}`);
+  // ==================================================
+  // PHASE 4 SEEDING
+  // ==================================================
+  
+  await prisma.recommendation.create({
+      data: {
+          batchId: harvest.id,
+          recommendedAction: 'STORE',
+          reason: 'Batch is fresh and high quality. Storing will allow selling during peak market prices later.',
+          confidenceScore: 92,
+          priority: 'HIGH',
+          expectedProfit: 45000,
+          spoilageRiskScore: 25,
+          decisionHistories: {
+              create: [
+                  { actionEvaluated: 'STORE', score: 90, reasoning: 'Batch is fresh and high quality.' },
+                  { actionEvaluated: 'SELL_NOW', score: 60, reasoning: 'Batch is fresh.' }
+              ]
+          }
+      }
+  });
+
+  await prisma.riskAssessment.create({
+      data: {
+          batchId: harvest.id,
+          riskScore: 25,
+          riskCategory: 'LOW',
+          factors: { remainingShelfLife: 180, storageQuality: 'Normal cold storage' }
+      }
+  });
+
+  await prisma.predictionSnapshot.create({
+      data: {
+          batchId: harvest.id,
+          shelfLifeRemaining: 180,
+          storageQuality: 'Normal cold storage',
+          environmentalConditions: { temp: 15, humidity: 60 }
+      }
+  });
+  console.log(`Created recommendation logic for batch: ${harvest.batchNumber}`);
 
   console.log('Seeding finished.');
 }
