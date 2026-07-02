@@ -1,4 +1,4 @@
-import { PrismaClient, CropCategory, WarehouseType, MarketType } from '@prisma/client';
+import { PrismaClient, CropCategory, WarehouseType, MarketType, DemandLevel } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -205,7 +205,44 @@ async function main() {
           environmentalConditions: { temp: 15, humidity: 60 }
       }
   });
-  console.log(`Created recommendation logic for batch: ${harvest.batchNumber}`);
+  // ==================================================
+  // PHASE 5 SEEDING
+  // ==================================================
+  
+  await prisma.marketPriceHistory.create({
+    data: {
+      marketId: apmcMarket.id,
+      cropId: wheat.id,
+      date: new Date(),
+      minPrice: 2000,
+      maxPrice: 2500,
+      modalPrice: 2200,
+      arrivalQuantity: 50,
+    }
+  });
+
+  await prisma.pricePrediction.create({
+    data: {
+      marketId: apmcMarket.id,
+      cropId: wheat.id,
+      predictedDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+      predictedMinPrice: 2100,
+      predictedMaxPrice: 2600,
+      predictedModalPrice: 2350,
+      confidenceScore: 85.5,
+    }
+  });
+
+  await prisma.marketDemand.create({
+    data: {
+      marketId: apmcMarket.id,
+      cropId: wheat.id,
+      date: new Date(),
+      demandIndex: DemandLevel.HIGH,
+      volatilityScore: 0.15,
+    }
+  });
+  console.log('Created market intelligence mock data');
 
   console.log('Seeding finished.');
 }
