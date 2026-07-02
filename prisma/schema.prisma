@@ -1,0 +1,337 @@
+// ==================================================
+// HarvestShield AI - Prisma Schema
+// ==================================================
+// This is the single source of truth for the database
+// Run `npx prisma migrate dev` to apply changes
+// ==================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --------------------------------------------------
+// Enums
+// --------------------------------------------------
+
+enum Role {
+  ADMIN
+  FARMER
+  FPO
+  WAREHOUSE
+  PROCESSOR
+  MARKET
+}
+
+enum CropCategory {
+  VEGETABLE
+  FRUIT
+  GRAIN
+  PULSES
+  OILSEED
+  OTHER
+}
+
+enum WarehouseType {
+  NORMAL
+  COLD_STORAGE
+  CONTROLLED_ATMOSPHERE
+}
+
+enum MarketType {
+  LOCAL
+  APMC
+  PRIVATE
+}
+
+enum QualityGrade {
+  A
+  B
+  C
+}
+
+enum Unit {
+  KG
+  TON
+  CRATE
+}
+
+enum BatchStatus {
+  FRESH
+  STORED
+  IN_TRANSIT
+  AT_MARKET
+  PROCESSING
+  SOLD
+  SPOILED
+  EXPIRED
+}
+
+enum MovementType {
+  HARVEST
+  STORAGE
+  TRANSPORT
+  MARKET
+  PROCESSOR
+  SOLD
+  SPOILED
+}
+
+// --------------------------------------------------
+// Models
+// --------------------------------------------------
+
+/// Core user model supporting multi-role stakeholders
+/// across the agricultural supply chain.
+model User {
+  id         String   @id @default(uuid())
+  fullName   String   @map("full_name")
+  email      String   @unique
+  phone      String?
+  password   String
+  role       Role     @default(FARMER)
+  language   String   @default("en")
+  isVerified Boolean  @default(false) @map("is_verified")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  farmer     Farmer?
+
+  @@map("users")
+}
+
+/// Farmer profile linked to a User
+model Farmer {
+  id             String   @id @default(uuid())
+  userId         String   @unique @map("user_id")
+  aadhaarNumber  String?  @unique @map("aadhaar_number")
+  farmName       String?  @map("farm_name")
+  farmSize       Float    @map("farm_size")
+  soilType       String?  @map("soil_type")
+  irrigationType String?  @map("irrigation_type")
+  
+  village        String
+  taluka         String
+  district       String
+  state          String
+  country        String   @default("India")
+  
+  latitude       Float?
+  longitude      Float?
+  
+  fpoId          String?  @map("fpo_id")
+  
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fpo            Fpo?     @relation(fields: [fpoId], references: [id], onDelete: SetNull)
+
+  harvestBatches HarvestBatch[]
+
+  @@map("farmers")
+}
+
+/// Farmer Producer Organization
+model Fpo {
+  id                 String   @id @default(uuid())
+  name               String
+  registrationNumber String   @unique @map("registration_number")
+  contactPerson      String   @map("contact_person")
+  phone              String
+  email              String?
+  address            String
+  district           String
+  state              String
+  
+  latitude           Float?
+  longitude          Float?
+  
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  farmers            Farmer[]
+  harvestBatches     HarvestBatch[]
+
+  @@map("fpos")
+}
+
+/// Crop Master Data
+model Crop {
+  id                    String       @id @default(uuid())
+  cropName              String       @map("crop_name")
+  category              CropCategory
+  scientificName        String?      @map("scientific_name")
+  
+  averageShelfLife      Int?         @map("average_shelf_life") // in days
+  
+  idealTemperatureMin   Float?       @map("ideal_temperature_min")
+  idealTemperatureMax   Float?       @map("ideal_temperature_max")
+  idealHumidityMin      Float?       @map("ideal_humidity_min")
+  idealHumidityMax      Float?       @map("ideal_humidity_max")
+  
+  storageRecommendation String?      @map("storage_recommendation")
+  processingOptions     String?      @map("processing_options")
+  
+  createdAt             DateTime     @default(now()) @map("created_at")
+  updatedAt             DateTime     @updatedAt @map("updated_at")
+
+  harvestBatches        HarvestBatch[]
+
+  @@map("crops")
+}
+
+/// Warehouse Entity
+model Warehouse {
+  id                   String        @id @default(uuid())
+  warehouseName        String        @map("warehouse_name")
+  warehouseType        WarehouseType @map("warehouse_type")
+  ownerName            String        @map("owner_name")
+  
+  capacity             Float         // e.g. in Metric Tons
+  availableCapacity    Float         @map("available_capacity")
+  
+  temperatureSupported Boolean       @default(false) @map("temperature_supported")
+  humiditySupported    Boolean       @default(false) @map("humidity_supported")
+  
+  district             String
+  state                String
+  latitude             Float?
+  longitude            Float?
+  contactNumber        String        @map("contact_number")
+  
+  createdAt            DateTime      @default(now()) @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+
+  inventories          Inventory[]
+
+  @@map("warehouses")
+}
+
+/// Market (Mandi) Entity
+model Market {
+  id            String     @id @default(uuid())
+  marketName    String     @map("market_name")
+  marketType    MarketType @map("market_type")
+  
+  district      String
+  state         String
+  latitude      Float?
+  longitude     Float?
+  contactNumber String?    @map("contact_number")
+  
+  operatingDays String?    @map("operating_days") // e.g., "Mon-Sat"
+  
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  @@map("markets")
+}
+
+/// Food Processor Entity
+model Processor {
+  id              String   @id @default(uuid())
+  companyName     String   @map("company_name")
+  
+  acceptedCrops   String[] @map("accepted_crops")
+  processingType  String   @map("processing_type")
+  capacityPerDay  Float    @map("capacity_per_day") // e.g. in Metric Tons
+  
+  district        String
+  state           String
+  latitude        Float?
+  longitude       Float?
+  contactPerson   String   @map("contact_person")
+  phone           String
+  
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("processors")
+}
+
+// --------------------------------------------------
+// Phase 3: Harvest & Inventory Intelligence
+// --------------------------------------------------
+
+/// Unique trackable inventory batch for harvested produce
+model HarvestBatch {
+  id                    String        @id @default(uuid())
+  batchNumber           String        @unique @map("batch_number")
+  
+  farmerId              String        @map("farmer_id")
+  cropId                String        @map("crop_id")
+  fpoId                 String?       @map("fpo_id")
+  
+  quantity              Float
+  unit                  Unit          @default(KG)
+  qualityGrade          QualityGrade  @map("quality_grade")
+  
+  harvestDate           DateTime      @map("harvest_date")
+  expectedShelfLifeDays Int?          @map("expected_shelf_life_days")
+  
+  currentStatus         BatchStatus   @default(FRESH) @map("current_status")
+  currentLocation       String?       @map("current_location")
+  remarks               String?
+  
+  createdAt             DateTime      @default(now()) @map("created_at")
+  updatedAt             DateTime      @updatedAt @map("updated_at")
+
+  farmer                Farmer        @relation(fields: [farmerId], references: [id])
+  crop                  Crop          @relation(fields: [cropId], references: [id])
+  fpo                   Fpo?          @relation(fields: [fpoId], references: [id])
+  
+  inventories           Inventory[]
+  movements             Movement[]
+
+  @@map("harvest_batches")
+}
+
+/// Stored inventory inside a warehouse
+model Inventory {
+  id                String       @id @default(uuid())
+  batchId           String       @map("batch_id")
+  warehouseId       String       @map("warehouse_id")
+  
+  storedQuantity    Float        @map("stored_quantity")
+  remainingQuantity Float        @map("remaining_quantity")
+  
+  storageDate       DateTime     @default(now()) @map("storage_date")
+  expiryDate        DateTime?    @map("expiry_date")
+  
+  temperature       Float?
+  humidity          Float?
+  storageCondition  String?      @map("storage_condition")
+  
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+
+  harvestBatch      HarvestBatch @relation(fields: [batchId], references: [id])
+  warehouse         Warehouse    @relation(fields: [warehouseId], references: [id])
+
+  @@map("inventories")
+}
+
+/// Historical tracker of produce movement across lifecycle
+model Movement {
+  id            String       @id @default(uuid())
+  batchId       String       @map("batch_id")
+  
+  fromLocation  String?      @map("from_location")
+  toLocation    String?      @map("to_location")
+  movementType  MovementType @map("movement_type")
+  
+  movementDate  DateTime     @default(now()) @map("movement_date")
+  transportCost Float?       @map("transport_cost")
+  remarks       String?
+  
+  createdAt     DateTime     @default(now()) @map("created_at")
+
+  harvestBatch  HarvestBatch @relation(fields: [batchId], references: [id])
+
+  @@map("movements")
+}
