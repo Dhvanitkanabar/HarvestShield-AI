@@ -25,6 +25,7 @@ enum Role {
   WAREHOUSE
   PROCESSOR
   MARKET
+  DRIVER
 }
 
 enum CropCategory {
@@ -128,6 +129,7 @@ model User {
   updatedAt  DateTime @updatedAt @map("updated_at")
 
   farmer     Farmer?
+  driver     Driver?
 
   @@map("users")
 }
@@ -325,6 +327,7 @@ model HarvestBatch {
   recommendations       Recommendation[]
   riskAssessments       RiskAssessment[]
   predictionSnapshots   PredictionSnapshot[]
+  transportRequests     TransportRequest[]
 
   @@map("harvest_batches")
 }
@@ -518,3 +521,108 @@ model MarketDemand {
   @@unique([marketId, cropId, date])
   @@map("market_demands")
 }
+
+// --------------------------------------------------
+// Phase 6: Logistics & Smart Distribution Intelligence
+// --------------------------------------------------
+
+enum VehicleType {
+  TRUCK
+  REFRIGERATED_TRUCK
+  VAN
+  PICKUP
+}
+
+enum TransportStatus {
+  PENDING
+  ASSIGNED
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+  DELAYED
+}
+
+/// Vehicle Entity
+model Vehicle {
+  id              String      @id @default(uuid())
+  registrationNo  String      @unique @map("registration_no")
+  vehicleType     VehicleType @map("vehicle_type")
+  capacity        Float       // in Metric Tons
+  isAvailable     Boolean     @default(true) @map("is_available")
+  currentLocation String?     @map("current_location")
+  
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  drivers         Driver[]
+  transportRequests TransportRequest[]
+  
+  @@map("vehicles")
+}
+
+/// Driver Entity
+model Driver {
+  id              String      @id @default(uuid())
+  userId          String      @unique @map("user_id")
+  licenseNumber   String      @unique @map("license_number")
+  vehicleId       String?     @map("vehicle_id")
+  isAvailable     Boolean     @default(true) @map("is_available")
+  
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  user            User        @relation(fields: [userId], references: [id])
+  vehicle         Vehicle?    @relation(fields: [vehicleId], references: [id])
+  transportRequests TransportRequest[]
+
+  @@map("drivers")
+}
+
+/// Transport Request for moving HarvestBatches
+model TransportRequest {
+  id                String          @id @default(uuid())
+  batchId           String          @map("batch_id")
+  vehicleId         String?         @map("vehicle_id")
+  driverId          String?         @map("driver_id")
+  
+  pickupLocation    String          @map("pickup_location")
+  dropoffLocation   String          @map("dropoff_location")
+  
+  status            TransportStatus @default(PENDING)
+  scheduledDate     DateTime?       @map("scheduled_date")
+  estimatedCost     Float?          @map("estimated_cost")
+  
+  distanceKm        Float?          @map("distance_km")
+  estimatedTimeMins Int?            @map("estimated_time_mins")
+  
+  actualPickupTime  DateTime?       @map("actual_pickup_time")
+  actualDeliveryTime DateTime?      @map("actual_delivery_time")
+  
+  fuelConsumed      Float?          @map("fuel_consumed")
+  
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  harvestBatch      HarvestBatch    @relation(fields: [batchId], references: [id])
+  vehicle           Vehicle?        @relation(fields: [vehicleId], references: [id])
+  driver            Driver?         @relation(fields: [driverId], references: [id])
+  coldChainLogs     ColdChainLog[]
+
+  @@map("transport_requests")
+}
+
+/// Cold Chain IoT Data for Tracking
+model ColdChainLog {
+  id                 String           @id @default(uuid())
+  transportRequestId String           @map("transport_request_id")
+  timestamp          DateTime         @default(now())
+  temperature        Float
+  humidity           Float?
+  latitude           Float?
+  longitude          Float?
+
+  transportRequest   TransportRequest @relation(fields: [transportRequestId], references: [id])
+
+  @@map("cold_chain_logs")
+}
+

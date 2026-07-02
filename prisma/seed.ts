@@ -11,7 +11,9 @@ import {
   MovementType,
   RecommendationAction,
   PriorityLevel,
-  RiskCategory
+  RiskCategory,
+  VehicleType,
+  TransportStatus
 } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -364,6 +366,93 @@ async function main() {
         volatilityScore: 0.15,
       }
     });
+
+    // ==================================================
+    // 13. Seed Logistics & Distribution (Phase 6)
+    // ==================================================
+
+    // Seed Driver User
+    const mockDriverUser = await prisma.user.upsert({
+      where: { email: 'driver@example.com' },
+      update: {},
+      create: {
+        fullName: 'Raju Driver',
+        email: 'driver@example.com',
+        password: 'hashedpassword',
+        role: Role.DRIVER,
+        isVerified: true,
+      }
+    });
+
+    // Seed Vehicle
+    let truck = await prisma.vehicle.findUnique({ where: { registrationNo: 'MH-12-AB-1234' }});
+    if (!truck) {
+      truck = await prisma.vehicle.create({
+        data: {
+          registrationNo: 'MH-12-AB-1234',
+          vehicleType: VehicleType.TRUCK,
+          capacity: 10,
+          currentLocation: 'Pune APMC',
+        }
+      });
+    }
+
+    let reeferTruck = await prisma.vehicle.findUnique({ where: { registrationNo: 'MH-14-CD-5678' }});
+    if (!reeferTruck) {
+      reeferTruck = await prisma.vehicle.create({
+        data: {
+          registrationNo: 'MH-14-CD-5678',
+          vehicleType: VehicleType.REFRIGERATED_TRUCK,
+          capacity: 5,
+          currentLocation: 'Nashik',
+        }
+      });
+    }
+
+    // Seed Driver Profile
+    let driverProfile = await prisma.driver.findUnique({ where: { licenseNumber: 'MH12-2024-1234567' }});
+    if (!driverProfile) {
+      driverProfile = await prisma.driver.create({
+        data: {
+          userId: mockDriverUser.id,
+          licenseNumber: 'MH12-2024-1234567',
+          vehicleId: truck.id,
+        }
+      });
+    }
+
+    // Seed Transport Request
+    let transportRequest = await prisma.transportRequest.findFirst({ where: { batchId: harvest.id }});
+    if (!transportRequest) {
+      transportRequest = await prisma.transportRequest.create({
+        data: {
+          batchId: harvest.id,
+          vehicleId: truck.id,
+          driverId: driverProfile.id,
+          pickupLocation: mockFarmer.village,
+          dropoffLocation: coldStorage.warehouseName,
+          status: TransportStatus.DELIVERED,
+          scheduledDate: new Date(),
+          estimatedCost: 2500,
+          distanceKm: 45.5,
+          estimatedTimeMins: 90,
+          actualPickupTime: new Date(Date.now() - 3 * 3600 * 1000), // 3 hours ago
+          actualDeliveryTime: new Date(Date.now() - 1 * 3600 * 1000), // 1 hour ago
+          fuelConsumed: 12.5,
+        }
+      });
+
+      // Seed Cold Chain Log (Mock IoT data)
+      await prisma.coldChainLog.create({
+        data: {
+          transportRequestId: transportRequest.id,
+          temperature: 18.5,
+          humidity: 65,
+          latitude: 18.5204,
+          longitude: 73.8567,
+        }
+      });
+    }
 
     console.log('Seeding finished successfully.');
   } catch (error) {

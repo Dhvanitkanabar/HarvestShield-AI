@@ -11,6 +11,7 @@ import inventoryRoutes from './inventory.routes.js';
 import movementRoutes from './movement.routes.js';
 import recommendationRoutes from './recommendation.routes.js';
 import marketIntelligenceRoutes from './market-intelligence.routes.js';
+import logisticsRoutes from './logistics.routes.js';
 import { sendSuccess } from '../utils/apiResponse.js';
 import { HTTP_STATUS, MESSAGES } from '../constants/index.js';
 
@@ -44,5 +45,6 @@ router.use('/recommendations', recommendationRoutes);
 
 // ── Phase 5 Market Intelligence Routes ──
 router.use('/market-intelligence', marketIntelligenceRoutes);
+router.use('/logistics', logisticsRoutes);
 
 export default router;
