@@ -73,6 +73,32 @@ services:
       postgres:
         condition: service_healthy
 
+  # ---------------------------------------------------------
+  # Python AI Intelligence Microservice
+  # ---------------------------------------------------------
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: harvestshield-ai
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    networks:
+      - harvestshield_net
+
+  # ---------------------------------------------------------
+  # Redis (Future Compatibility)
+  # ---------------------------------------------------------
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: harvestshield-redis
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - harvestshield_net
+
 volumes:
   postgres_data:
   pgadmin_data:

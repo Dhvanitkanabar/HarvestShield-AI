@@ -38,4 +38,8 @@ if (!parsed.success) {
   process.exit(1);
 }
 
-export const env = Object.freeze(parsed.data);
+export const env = Object.freeze({
+  ...parsed.data,
+  REDIS_URL: process.env.REDIS_URL,
+  AI_SERVICE_URL: process.env.AI_SERVICE_URL || 'http://localhost:8000',
+});

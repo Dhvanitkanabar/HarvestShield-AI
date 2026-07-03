@@ -12,6 +12,11 @@ import movementRoutes from './movement.routes.js';
 import recommendationRoutes from './recommendation.routes.js';
 import marketIntelligenceRoutes from './market-intelligence.routes.js';
 import logisticsRoutes from './logistics.routes.js';
+import alertRoutes from './alert.routes.js';
+import dashboardRoutes from './dashboard.routes.js';
+import analyticsRoutes from './analytics.routes.js';
+import reportRoutes from './report.routes.js';
+import auditRoutes from './audit.routes.js';
 import { sendSuccess } from '../utils/apiResponse.js';
 import { HTTP_STATUS, MESSAGES } from '../constants/index.js';
 
@@ -46,5 +51,12 @@ router.use('/recommendations', recommendationRoutes);
 // ── Phase 5 Market Intelligence Routes ──
 router.use('/market-intelligence', marketIntelligenceRoutes);
 router.use('/logistics', logisticsRoutes);
+
+// ── Phase 7 Smart Monitoring & Executive Analytics ──
+router.use('/alerts', alertRoutes);
+router.use('/dashboard', dashboardRoutes);
+router.use('/analytics', analyticsRoutes);
+router.use('/reports', reportRoutes);
+router.use('/audit', auditRoutes);
 
 export default router;

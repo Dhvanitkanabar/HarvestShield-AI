@@ -8,6 +8,7 @@ import { RiskEngine } from '../engines/risk.engine.js';
 import { ProfitEngine } from '../engines/profit.engine.js';
 import { decisionEngine } from '../engines/decision.engine.js';
 import type { QueryRecommendationInput } from '../validators/recommendation.validator.js';
+import { env } from '../config/env.js';
 
 export class RecommendationService {
   constructor(private readonly recommendationRepo: RecommendationRepository) {}
@@ -33,14 +34,55 @@ export class RecommendationService {
     const context = { batch, inventory, crop, currentRiskScore: riskScore, expectedProfit };
     const { bestRecommendation, allResults } = decisionEngine.evaluateAll(context);
 
+    // Call Python AI Microservice
+    let aiRecommendation: any = null;
+    try {
+        const aiUrl = env.AI_SERVICE_URL || 'http://localhost:8000';
+        const response = await fetch(`${aiUrl}/recommend`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                batch_id: batch.id,
+                crop: crop.cropName,
+                quantity: batch.quantity,
+                storage_days: 0, // Simplify
+                shelf_life: batch.expectedShelfLifeDays || 1,
+                temperature: inventory?.temperature || 25,
+                humidity: inventory?.humidity || 60,
+                quality_grade: batch.qualityGrade || 'A',
+                current_price: 0 // Mock price or get from market service
+            })
+        });
+        
+        if (response.ok) {
+            aiRecommendation = await response.json();
+        }
+    } catch (err) {
+        console.warn("AI Service unavailable, falling back to local rule-based Decision Engine.");
+    }
+
+    let finalAction, finalConfidence, finalReason, finalPriority;
+
+    if (aiRecommendation && aiRecommendation.best_action) {
+        finalAction = aiRecommendation.best_action.action;
+        finalConfidence = aiRecommendation.best_action.confidence;
+        finalReason = aiRecommendation.best_action.reason;
+        finalPriority = aiRecommendation.best_action.priority;
+    } else {
+        finalAction = bestRecommendation.action;
+        finalConfidence = bestRecommendation.confidence;
+        finalReason = bestRecommendation.reason;
+        finalPriority = bestRecommendation.priority;
+    }
+
     // 4. Save everything via Transaction
     const savedRec = await this.recommendationRepo.saveRecommendationTransaction({
         recommendation: {
             batchId,
-            recommendedAction: bestRecommendation.action,
-            reason: bestRecommendation.reason,
-            confidenceScore: bestRecommendation.confidence,
-            priority: bestRecommendation.priority,
+            recommendedAction: finalAction,
+            reason: finalReason,
+            confidenceScore: finalConfidence,
+            priority: finalPriority,
             expectedProfit,
             spoilageRiskScore: riskScore
         },

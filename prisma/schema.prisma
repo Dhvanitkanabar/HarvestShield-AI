@@ -130,6 +130,8 @@ model User {
 
   farmer     Farmer?
   driver     Driver?
+  notifications Notification[]
+  auditLogs     AuditLog[]
 
   @@map("users")
 }
@@ -626,3 +628,134 @@ model ColdChainLog {
   @@map("cold_chain_logs")
 }
 
+// --------------------------------------------------
+// Phase 7: Smart Monitoring, Alerts & Executive Analytics
+// --------------------------------------------------
+
+enum AlertType {
+  HIGH_SPOILAGE_RISK
+  EXPIRING_INVENTORY
+  TEMPERATURE_VIOLATION
+  WAREHOUSE_CAPACITY_FULL
+  LOW_MARKET_DEMAND
+  HIGH_MARKET_DEMAND
+  TRANSPORT_DELAY
+  COLD_CHAIN_FAILURE
+  AI_RECOMMENDATION_GENERATED
+  EMERGENCY_ACTION_REQUIRED
+}
+
+enum AlertPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AlertStatus {
+  NEW
+  ACKNOWLEDGED
+  IN_PROGRESS
+  RESOLVED
+  DISMISSED
+}
+
+enum NotificationType {
+  IN_APP
+  EMAIL
+  SMS
+  PUSH
+  WHATSAPP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  READ
+}
+
+model Alert {
+  id          String        @id @default(uuid())
+  title       String
+  description String
+  type        AlertType
+  priority    AlertPriority
+  status      AlertStatus   @default(NEW)
+  
+  batchId     String?       @map("batch_id")
+  warehouseId String?       @map("warehouse_id")
+  
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  resolvedAt  DateTime?     @map("resolved_at")
+
+  notifications Notification[]
+
+  @@map("alerts")
+}
+
+model Notification {
+  id        String             @id @default(uuid())
+  alertId   String?            @map("alert_id")
+  userId    String             @map("user_id")
+  type      NotificationType
+  status    NotificationStatus @default(PENDING)
+  message   String
+  
+  createdAt DateTime           @default(now()) @map("created_at")
+  sentAt    DateTime?          @map("sent_at")
+  readAt    DateTime?          @map("read_at")
+
+  alert     Alert?             @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  timestamp DateTime @default(now())
+  userId    String?  @map("user_id")
+  module    String
+  action    String
+  before    Json?
+  after     Json?
+  ipAddress String?  @map("ip_address")
+
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}
+
+model DashboardSnapshot {
+  id          String   @id @default(uuid())
+  timestamp   DateTime @default(now())
+  metrics     Json     // { totalFarmers, totalHarvest, totalInventory, etc }
+  
+  @@map("dashboard_snapshots")
+}
+
+model AnalyticsSnapshot {
+  id          String   @id @default(uuid())
+  periodStart DateTime @map("period_start")
+  periodEnd   DateTime @map("period_end")
+  periodType  String   // "DAILY", "WEEKLY", "MONTHLY"
+  metrics     Json     // trend data
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  @@map("analytics_snapshots")
+}
+
+model ReportHistory {
+  id          String   @id @default(uuid())
+  reportType  String   @map("report_type") // e.g. "INVENTORY", "HARVEST"
+  format      String   // "PDF", "EXCEL", "CSV"
+  filePath    String   @map("file_path")
+  generatedBy String?  @map("generated_by") // userId
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("report_history")
+}
