@@ -23,20 +23,13 @@ export default function LoginPage() {
     const password = formData.get("password") as string;
     
     try {
-      // Temporary mock login for development purposes
-      if (email === "admin@harvestshield.com" && password === "admin") {
-         localStorage.setItem("token", "mock-jwt-token");
-         localStorage.setItem("userRole", "ADMIN");
-         toast.success("Logged in successfully!");
-         router.push("/dashboard/admin");
-      } else {
-         const response = await apiClient.post("/auth/login", { email, password });
-         localStorage.setItem("token", response.data.token);
-         localStorage.setItem("userRole", response.data.user.role);
-         toast.success("Logged in successfully!");
-         router.push(`/dashboard/${response.data.user.role.toLowerCase()}`);
-      }
+      const response = await apiClient.post("/auth/login", { email, password });
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("userRole", response.data.user.role);
+      toast.success("Logged in successfully!");
+      router.push(`/dashboard/${response.data.user.role.toLowerCase()}`);
     } catch (error: unknown) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const err = error as any;
       toast.error(err.response?.data?.message || "Failed to login. Please check your credentials.");
     } finally {

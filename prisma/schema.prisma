@@ -26,6 +26,9 @@ enum Role {
   PROCESSOR
   MARKET
   DRIVER
+  INSPECTOR
+  ANALYST
+  SUPER_ADMIN
 }
 
 enum CropCategory {
@@ -243,6 +246,7 @@ model Warehouse {
   updatedAt            DateTime      @updatedAt @map("updated_at")
 
   inventories          Inventory[]
+  devices              Device[]
 
   @@map("warehouses")
 }
@@ -558,6 +562,7 @@ model Vehicle {
 
   drivers         Driver[]
   transportRequests TransportRequest[]
+  devices         Device[]
   
   @@map("vehicles")
 }
@@ -759,3 +764,127 @@ model ReportHistory {
 
   @@map("report_history")
 }
+
+// --------------------------------------------------
+// Phase 10: IoT, Real-Time Monitoring & Digital Twin
+// --------------------------------------------------
+
+enum DeviceType {
+  TEMPERATURE_SENSOR
+  HUMIDITY_SENSOR
+  GPS_TRACKER
+  GAS_SENSOR
+  MULTI_SENSOR
+}
+
+enum DeviceStatus {
+  ONLINE
+  OFFLINE
+  MAINTENANCE
+  DECOMMISSIONED
+}
+
+enum SensorType {
+  TEMPERATURE
+  HUMIDITY
+  GPS
+  GAS
+  BATTERY
+}
+
+enum SensorHealth {
+  HEALTHY
+  DEGRADED
+  FAILED
+}
+
+model Device {
+  id              String      @id @default(uuid())
+  deviceId        String      @unique @map("device_id")
+  deviceType      DeviceType  @map("device_type")
+  status          DeviceStatus @default(OFFLINE)
+  
+  batteryLevel    Float?      @map("battery_level")
+  lastPingAt      DateTime?   @map("last_ping_at")
+  
+  warehouseId     String?     @map("warehouse_id")
+  vehicleId       String?     @map("vehicle_id")
+  
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  warehouse       Warehouse?  @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
+  vehicle         Vehicle?    @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  sensors         Sensor[]
+
+  @@map("devices")
+}
+
+model Sensor {
+  id              String      @id @default(uuid())
+  deviceId        String      @map("device_id")
+  sensorType      SensorType  @map("sensor_type")
+  unit            String      // e.g., "CELSIUS", "PERCENTAGE", "LAT_LONG"
+  
+  calibrationDate DateTime?   @map("calibration_date")
+  healthStatus    SensorHealth @default(HEALTHY) @map("health_status")
+
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  device          Device      @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  readings        SensorReading[]
+
+  @@map("sensors")
+}
+
+model SensorReading {
+  id              String      @id @default(uuid())
+  sensorId        String      @map("sensor_id")
+  timestamp       DateTime    @default(now())
+  
+  value           Float
+  metadata        Json?       // e.g., { "lat": 12.34, "lng": 56.78 }
+  
+  sensor          Sensor      @relation(fields: [sensorId], references: [id], onDelete: Cascade)
+
+  @@index([sensorId, timestamp])
+  @@map("sensor_readings")
+}
+
+model Telemetry {
+  id              String      @id @default(uuid())
+  deviceId        String      @map("device_id")
+  timestamp       DateTime    @default(now())
+  
+  payload         Json        // Raw telemetry data block
+  processed       Boolean     @default(false)
+  
+  @@index([deviceId, timestamp])
+  @@map("telemetry")
+}
+
+model DigitalTwin {
+  id              String      @id @default(uuid())
+  entityType      String      @map("entity_type") // "WAREHOUSE", "VEHICLE", "BATCH"
+  entityId        String      @unique @map("entity_id")
+  
+  currentStatus   Json        @map("current_status")
+  lastUpdatedAt   DateTime    @default(now()) @map("last_updated_at")
+
+  @@map("digital_twins")
+}
+
+model SimulationScenario {
+  id              String      @id @default(uuid())
+  name            String
+  description     String
+  isActive        Boolean     @default(false) @map("is_active")
+  parameters      Json
+  
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  @@map("simulation_scenarios")
+}
+

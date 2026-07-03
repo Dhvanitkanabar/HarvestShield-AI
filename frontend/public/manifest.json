@@ -1,0 +1,37 @@
+{
+  "name": "HarvestShield AI",
+  "short_name": "HarvestShield",
+  "description": "AI-powered agricultural supply chain intelligence platform for Indian farmers",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#10b981",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "categories": ["productivity", "food", "agriculture"],
+  "shortcuts": [
+    {
+      "name": "My Harvests",
+      "url": "/dashboard/farmer/harvests",
+      "description": "View and manage harvest batches"
+    },
+    {
+      "name": "AI Recommendations",
+      "url": "/dashboard/farmer/ai",
+      "description": "View AI-powered recommendations"
+    }
+  ]
+}

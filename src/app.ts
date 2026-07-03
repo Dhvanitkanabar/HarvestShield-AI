@@ -9,7 +9,9 @@
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
+import compression from 'compression';
 import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
 import { env } from './config/env.js';
 import { requestLogger, globalErrorHandler } from './middleware/index.js';
 import routes from './routes/index.js';
@@ -18,9 +20,20 @@ import { HTTP_STATUS, MESSAGES } from './constants/index.js';
 
 const app = express();
 
-// ==================================================
-// Security Middleware
-// ==================================================
+// Rate Limiting (prevent brute-force & DDoS)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 500, // max 500 requests per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many requests. Please try again later.' },
+});
+app.use(limiter);
+
+// Compression (gzip)
+app.use(compression());
+
+// Security headers
 app.use(helmet());
 app.use(
   cors({

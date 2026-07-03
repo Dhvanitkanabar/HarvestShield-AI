@@ -17,6 +17,8 @@ import dashboardRoutes from './dashboard.routes.js';
 import analyticsRoutes from './analytics.routes.js';
 import reportRoutes from './report.routes.js';
 import auditRoutes from './audit.routes.js';
+import iotRoutes from './iot.routes.js';
+import demoRoutes from './demo.routes.js';
 import { sendSuccess } from '../utils/apiResponse.js';
 import { HTTP_STATUS, MESSAGES } from '../constants/index.js';
 
@@ -58,5 +60,11 @@ router.use('/dashboard', dashboardRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/reports', reportRoutes);
 router.use('/audit', auditRoutes);
+
+// ── Phase 10 IoT Routes ──
+router.use('/iot', iotRoutes);
+
+// ── Demo Mode Routes ──
+router.use('/demo', demoRoutes);
 
 export default router;

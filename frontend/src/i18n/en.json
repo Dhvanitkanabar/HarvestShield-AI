@@ -1,0 +1,88 @@
+{
+  "nav": {
+    "overview": "Overview",
+    "harvests": "My Harvests",
+    "recommendations": "AI Recommendations",
+    "analytics": "Analytics",
+    "audit": "Audit Logs",
+    "maps": "Maps",
+    "impact": "Impact Dashboard",
+    "simulator": "Business Simulator",
+    "iot": "IoT & Digital Twin",
+    "logout": "Logout"
+  },
+  "dashboard": {
+    "welcome": "Welcome to HarvestShield AI",
+    "overview": "Enterprise Overview",
+    "overview_desc": "Global KPI tracking, platform revenue, and user analytics.",
+    "total_users": "Total Users",
+    "warehouses": "Warehouses",
+    "total_logistics": "Total Logistics",
+    "critical_alerts": "Critical Alerts",
+    "platform_revenue": "Platform Revenue"
+  },
+  "farmer": {
+    "my_harvests": "My Harvests",
+    "batch_number": "Batch Number",
+    "crop": "Crop",
+    "quantity": "Quantity",
+    "quality": "Quality Grade",
+    "status": "Status",
+    "harvest_date": "Harvest Date",
+    "shelf_life": "Expected Shelf Life",
+    "location": "Current Location"
+  },
+  "recommendation": {
+    "title": "AI Recommendation",
+    "action": "Recommended Action",
+    "confidence": "Confidence",
+    "reasoning": "Primary Reasoning",
+    "priority": "Priority",
+    "expected_profit": "Expected Profit",
+    "spoilage_risk": "Spoilage Risk",
+    "factors": "Factors Considered",
+    "alternatives": "Alternative Actions Evaluated",
+    "benefit": "Expected Benefit",
+    "risks": "Potential Risks"
+  },
+  "alert": {
+    "new": "New",
+    "acknowledged": "Acknowledged",
+    "in_progress": "In Progress",
+    "resolved": "Resolved",
+    "high_priority": "High Priority",
+    "critical": "Critical"
+  },
+  "demo": {
+    "title": "Demo Mode",
+    "description": "Explore HarvestShield AI with pre-loaded realistic data",
+    "credentials_title": "Sample Login Credentials",
+    "reset_button": "Reset Demo Data",
+    "reset_success": "Demo data reset successfully"
+  },
+  "impact": {
+    "food_saved": "Food Saved",
+    "revenue_increased": "Revenue Increased",
+    "co2_reduced": "CO₂ Reduced",
+    "storage_utilization": "Storage Utilization",
+    "spoilage_prevented": "Spoilage Prevented",
+    "farmer_income": "Farmer Income Boost",
+    "ai_accuracy": "AI Accuracy"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "search": "Search",
+    "filter": "Filter",
+    "refresh": "Refresh",
+    "view_details": "View Details",
+    "back": "Back",
+    "no_data": "No data available",
+    "metric_tons": "Metric Tons",
+    "kg": "kg",
+    "days": "days"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "nav": {
+    "overview": "अवलोकन",
+    "harvests": "मेरी फसलें",
+    "recommendations": "AI सुझाव",
+    "analytics": "विश्लेषण",
+    "audit": "ऑडिट लॉग",
+    "maps": "नक्शे",
+    "impact": "प्रभाव डैशबोर्ड",
+    "simulator": "व्यापार सिमुलेटर",
+    "iot": "IoT और डिजिटल ट्विन",
+    "logout": "लॉग आउट"
+  },
+  "dashboard": {
+    "welcome": "HarvestShield AI में आपका स्वागत है",
+    "overview": "एंटरप्राइज़ अवलोकन",
+    "overview_desc": "वैश्विक KPI ट्रैकिंग, प्लेटफॉर्म राजस्व और उपयोगकर्ता विश्लेषण।",
+    "total_users": "कुल उपयोगकर्ता",
+    "warehouses": "गोदाम",
+    "total_logistics": "कुल लॉजिस्टिक्स",
+    "critical_alerts": "महत्वपूर्ण अलर्ट",
+    "platform_revenue": "प्लेटफॉर्म राजस्व"
+  },
+  "farmer": {
+    "my_harvests": "मेरी फसलें",
+    "batch_number": "बैच संख्या",
+    "crop": "फसल",
+    "quantity": "मात्रा",
+    "quality": "गुणवत्ता श्रेणी",
+    "status": "स्थिति",
+    "harvest_date": "कटाई की तारीख",
+    "shelf_life": "अपेक्षित शेल्फ जीवन",
+    "location": "वर्तमान स्थान"
+  },
+  "recommendation": {
+    "title": "AI सुझाव",
+    "action": "अनुशंसित कार्रवाई",
+    "confidence": "आत्मविश्वास",
+    "reasoning": "मुख्य तर्क",
+    "priority": "प्राथमिकता",
+    "expected_profit": "अपेक्षित लाभ",
+    "spoilage_risk": "खराब होने का जोखिम",
+    "factors": "विचारित कारक",
+    "alternatives": "वैकल्पिक कार्रवाइयाँ",
+    "benefit": "अपेक्षित लाभ",
+    "risks": "संभावित जोखिम"
+  },
+  "alert": {
+    "new": "नया",
+    "acknowledged": "स्वीकृत",
+    "in_progress": "प्रगति में",
+    "resolved": "हल किया गया",
+    "high_priority": "उच्च प्राथमिकता",
+    "critical": "गंभीर"
+  },
+  "demo": {
+    "title": "डेमो मोड",
+    "description": "पहले से लोड किए गए वास्तविक डेटा के साथ HarvestShield AI का अन्वेषण करें",
+    "credentials_title": "नमूना लॉगिन क्रेडेंशियल",
+    "reset_button": "डेमो डेटा रीसेट करें",
+    "reset_success": "डेमो डेटा सफलतापूर्वक रीसेट हुआ"
+  },
+  "impact": {
+    "food_saved": "बचाया गया भोजन",
+    "revenue_increased": "बढ़ा हुआ राजस्व",
+    "co2_reduced": "CO₂ में कमी",
+    "storage_utilization": "भंडारण उपयोग",
+    "spoilage_prevented": "बर्बादी रोकी गई",
+    "farmer_income": "किसान आय वृद्धि",
+    "ai_accuracy": "AI सटीकता"
+  },
+  "common": {
+    "loading": "लोड हो रहा है...",
+    "error": "एक त्रुटि हुई",
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "submit": "जमा करें",
+    "search": "खोजें",
+    "filter": "फ़िल्टर",
+    "refresh": "ताज़ा करें",
+    "view_details": "विवरण देखें",
+    "back": "वापस",
+    "no_data": "कोई डेटा उपलब्ध नहीं",
+    "metric_tons": "मीट्रिक टन",
+    "kg": "किग्रा",
+    "days": "दिन"
+  }
+}

@@ -30,6 +30,7 @@ export default function RegisterPage() {
       toast.success("Registered successfully! Please login.");
       router.push("/login");
     } catch (error: unknown) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const err = error as any;
       toast.error(err.response?.data?.message || "Failed to register.");
     } finally {

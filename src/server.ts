@@ -9,6 +9,7 @@ import app from './app.js';
 import { env } from './config/env.js';
 import { logger } from './config/logger.js';
 import { connectDatabase, disconnectDatabase } from './prisma/client.js';
+import { initWebSocket } from './socket.js';
 
 async function bootstrap(): Promise<void> {
   // 1. Connect to database
@@ -27,6 +28,9 @@ async function bootstrap(): Promise<void> {
     ╚══════════════════════════════════════════════╝
     `);
   });
+
+  // Initialize WebSockets
+  initWebSocket(server);
 
   // 3. Graceful shutdown
   const shutdown = async (signal: string) => {
